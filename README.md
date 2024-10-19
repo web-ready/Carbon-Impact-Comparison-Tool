@@ -61,7 +61,7 @@ To use the Carbon Impact Comparison Tool:
 
 1. Clone this repository to your local machine:
    ```bash
-   git clone https://github.com/your-username/carbon-impact-comparison.git
+   git clone https://github.com/web-ready/carbon-impact-comparison.git
    ```
 
 2. Open the project folder:
