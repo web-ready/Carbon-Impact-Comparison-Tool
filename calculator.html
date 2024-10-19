@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carbon Impact Comparison</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+
+    <header class="text-center py-6 bg-blue-800 text-white">
+        <h1 class="text-3xl font-bold">Carbon Impact Comparison</h1>
+        <p class="text-lg">By Web-Ready Technology by Oasis of Change Inc.</p>
+    </header>
+
+    <div class="container mx-auto my-8 p-6 bg-white shadow-lg rounded-lg">
+        <h2 class="text-2xl font-bold mb-4">Upload Report Text</h2>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold">Before Optimization</h3>
+            <textarea id="before-report" rows="10" class="w-full p-4 border-gray-300 rounded-md shadow-sm" placeholder="Paste the 'before' report text here..."></textarea>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold">After Optimization</h3>
+            <textarea id="after-report" rows="10" class="w-full p-4 border-gray-300 rounded-md shadow-sm" placeholder="Paste the 'after' report text here..."></textarea>
+        </div>
+
+        <button id="compare-button" class="bg-blue-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-700 w-full">
+            Compare Reports
+        </button>
+    </div>
+
+    <div id="results-section" class="container mx-auto p-6 bg-white shadow-lg rounded-lg my-8 hidden">
+        <h2 class="text-2xl font-bold mb-4">Comparison Results</h2>
+        <div id="comparison-results" class="space-y-4">
+        </div>
+    </div>
+
+    <script>document.getElementById("compare-button").addEventListener("click", function() {
+        const beforeReport = document.getElementById("before-report").value;
+        const afterReport = document.getElementById("after-report").value;
+    
+        const beforeMetrics = extractMetrics(beforeReport);
+        const afterMetrics = extractMetrics(afterReport);
+    
+        if (isNaN(beforeMetrics.cleanPercent) || isNaN(afterMetrics.cleanPercent)) {
+            alert("Unable to extract cleanliness percentages. Please check your report input.");
+            return;
+        }
+    
+        const comparisonResults = calculateDifferences(beforeMetrics, afterMetrics);
+    
+        displayResults(comparisonResults, beforeMetrics.cleanPercent, afterMetrics.cleanPercent);
+        generateCaseStudy(comparisonResults, beforeMetrics.cleanPercent, afterMetrics.cleanPercent);
+    });
+    
+    function extractMetrics(report) {
+        const co2Regex = /([\d.]+)\s*g of CO2/i;
+        const pageViewsRegex = /([\d,]+)\s*monthly page views/i;
+        const energyRegex = /([\d.]+)\s*kWh/i;
+        const treesRegex = /([\d]+)\s*trees/i;
+        const cleanPercentRegex = /(?:dirtier than\s+(\d+)\%|cleaner than\s+(\d+)\%)/i;
+    
+        const co2 = report.match(co2Regex) ? parseFloat(report.match(co2Regex)[1].replace(',', '')) : 0;
+        const pageViews = report.match(pageViewsRegex) ? parseInt(report.match(pageViewsRegex)[1].replace(',', '')) : 0;
+        const energy = report.match(energyRegex) ? parseFloat(report.match(energyRegex)[1].replace(',', '')) : 0;
+        const trees = report.match(treesRegex) ? parseInt(report.match(treesRegex)[1].replace(',', '')) : 0;
+    
+        let cleanPercent = 0;
+        const cleanMatch = report.match(cleanPercentRegex);
+        if (cleanMatch) {
+            if (cleanMatch[1]) {
+                cleanPercent = 100 - parseInt(cleanMatch[1]);
+            } else if (cleanMatch[2]) {
+                cleanPercent = parseInt(cleanMatch[2]);
+            }
+        }
+    
+        return { co2, pageViews, energy, trees, cleanPercent };
+    }
+    
+    function calculateDifferences(before, after) {
+        const co2Difference = ((before.co2 - after.co2) / before.co2 * 100).toFixed(2);
+        const energyDifference = ((before.energy - after.energy) / before.energy * 100).toFixed(2);
+        const treesDifference = ((before.trees - after.trees) / before.trees * 100).toFixed(2);
+    
+        return { co2Difference, energyDifference, treesDifference };
+    }
+    
+    function displayResults(results, beforePercentile, afterPercentile) {
+        const resultsSection = document.getElementById("results-section");
+        const comparisonResults = document.getElementById("comparison-results");
+    
+        comparisonResults.innerHTML = `
+            <p><strong>Website Efficiency:</strong> Moved from the ${100 - beforePercentile}th percentile (dirtier than ${beforePercentile}%) to the ${afterPercentile}th percentile (cleaner than ${afterPercentile}% of websites).</p>
+            <p><strong>CO2 Emissions Reduction:</strong> ${results.co2Difference}% decrease in CO2 emissions per visit</p>
+            <p><strong>Energy Consumption Reduction:</strong> ${results.energyDifference}% decrease in energy usage</p>
+            <p><strong>Trees Offset Improvement:</strong> ${results.treesDifference}% fewer trees needed to offset emissions</p>
+        `;
+    
+        resultsSection.classList.remove("hidden");
+    }
+    
+    function generateCaseStudy(results, beforePercentile, afterPercentile) {
+        const caseStudyContent = `
+            <h2>Carbon Impact Case Study</h2>
+            <p><strong>Website Efficiency:</strong> Moved from the ${100 - beforePercentile}th percentile (dirtier than ${beforePercentile}%) to the ${afterPercentile}th percentile (cleaner than ${afterPercentile}% of websites).</p>
+            <p><strong>CO2 Emissions Reduction:</strong> ${results.co2Difference}% decrease in CO2 emissions per visit</p>
+            <p><strong>Energy Consumption Reduction:</strong> ${results.energyDifference}% decrease in energy usage</p>
+            <p><strong>Trees Offset Improvement:</strong> ${results.treesDifference}% fewer trees needed to offset emissions</p>
+            <p>This study showcases the environmental impact of optimizing the website. The significant reductions in CO2 emissions, energy usage, and tree offset requirements contribute to a more sustainable web presence.</p>
+        `;
+    
+        const reportSection = document.createElement('div');
+        reportSection.id = "case-study-report";
+        reportSection.className = "container mx-auto p-6 bg-white shadow-lg rounded-lg my-8";
+        reportSection.innerHTML = caseStudyContent;
+    
+        document.body.appendChild(reportSection);
+    
+        const downloadButton = document.createElement('button');
+        downloadButton.innerText = "Download Case Study";
+        downloadButton.className = "bg-blue-600 text-white py-2 px-4 rounded-md shadow-md hover:bg-blue-700 mt-4";
+        downloadButton.onclick = function() {
+            downloadCaseStudy(caseStudyContent);
+        };
+    
+        reportSection.appendChild(downloadButton);
+    }
+    
+    function downloadCaseStudy(content) {
+        const blob = new Blob([content], { type: "text/html" });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'carbon-impact-case-study.html';
+        link.click();
+    }
+     </script>
+
+</body>
+</html>
